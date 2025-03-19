@@ -14,11 +14,11 @@ const Navbar = () => {
     const checkUser = async () => {
       setLoading(true);
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
-        setUser(user);
+        setUser(session?.user || null);
       } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error("Error fetching user:", error.message);
       } finally {
         setLoading(false);
       }
@@ -26,40 +26,24 @@ const Navbar = () => {
 
     checkUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
         setUser(session?.user || null);
-        // Handle mobile OAuth redirect
-        if (event === "SIGNED_IN" && window.location.hash) {
-          window.location.hash = "";
-        }
       }
     );
 
-    return () => subscription?.unsubscribe();
+    return () => authListener?.subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    window.location.reload(); // Force full state reset
+    window.location.reload();
   };
-
-  if (loading) {
-    return (
-      <nav className="bg-gradient-to-r from-gray-950 to-black text-white p-5 flex justify-between items-center w-full px-7 relative z-50 shadow-lg border-b border-gray-700">
-        {/* Loading skeleton */}
-        <div className="animate-pulse flex items-center gap-3">
-          <div className="h-8 w-8 bg-gray-700 rounded-full"></div>
-          <div className="h-4 w-24 bg-gray-700 rounded"></div>
-        </div>
-      </nav>
-    );
-  }
 
   return (
     <nav className="bg-gradient-to-r from-gray-950 to-black text-white p-5 flex justify-between items-center w-full px-7 relative z-50 shadow-lg border-b border-gray-700">
-      {/* Left Side: Logo and Company Name */}
+      {/* Left Side: Logo */}
       <div className="flex items-center gap-2 sm:gap-3">
         <img src="/logo.png" alt="Company Logo" className="h-8 sm:h-12 w-auto" />
         <span className="text-xl sm:text-3xl font-extrabold font-[Poppins] bg-gradient-to-r from-orange-400 to-yellow-300 bg-clip-text text-transparent">
@@ -106,9 +90,7 @@ const Navbar = () => {
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 text-white">
               <UserCircle size={20} />
-              <span className="text-xs sm:text-sm">
-                {user.email || user.user_metadata?.email}
-              </span>
+              <span className="text-xs sm:text-sm">{user.email}</span>
             </div>
             <button
               onClick={handleLogout}

@@ -1,9 +1,9 @@
 import './App.css';
 import "./index.css";
-import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import Navbar from "./Navbar.jsx";
+import Navbar from "./Navbar";
 import ButtonSection from './Button.jsx';
 import Company from "./company";
 import Services from "./services";
@@ -15,40 +15,14 @@ import SlideIcon from './slideIcon.jsx';
 import Footer from './footer.jsx';
 import LoginPage from "./LoginPage";  
 import SignupPage from "./SignupPage";  
-import supabase from "./supabaseClient"; 
-
-// 🔹 Handle Supabase OAuth Redirect After Login
-const AuthCallback = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleAuthRedirect = async () => {
-      const { data, error } = await supabase.auth.getSession();
-
-      if (error) {
-        console.error("Auth Redirect Error:", error);
-      } else {
-        // ✅ Redirect to Home after login
-        navigate("/");
-      }
-    };
-
-    handleAuthRedirect();
-  }, [navigate]);
-
-  return (
-    <div className="flex justify-center items-center h-screen bg-black text-white">
-      <p>Logging you in...</p>
-    </div>
-  );
-};
+import AuthCallback from "./auth-callback";  // ✅ Import fixed callback handler
 
 function App() {
   return (
     <Router>
-      <Navbar />  
+      <Navbar />
       <Routes>
-        {/* Home Page */}
+        {/* ✅ Fixed Home Route (Instead of "Home") */}
         <Route path="/" element={
           <div className="w-full min-h-screen bg-black m-0 p-0 overflow-hidden">
             <ButtonSection />

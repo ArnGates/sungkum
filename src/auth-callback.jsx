@@ -6,52 +6,41 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let authSubscription;
-
-    const handleAuthentication = async (session) => {
+    const handleAuthentication = async () => {
       try {
-        if (!session) {
-          const { data: { session: newSession }, error } = await supabase.auth.getSession();
-          session = newSession;
-          
-          if (error || !newSession) {
-            throw new Error(error?.message || 'No session found');
-          }
+        // Wait for Supabase session to update
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error || !session) {
+          throw new Error(error?.message || "No session found");
         }
 
-        // Get redirect path from localStorage (set before authentication)
-        const returnTo = localStorage.getItem('returnTo') || '/';
-        localStorage.removeItem('returnTo');
-        
-        navigate(returnTo);
+        // ✅ Retrieve the return path (if stored)
+        const returnTo = localStorage.getItem("returnTo") || "/";
+        localStorage.removeItem("returnTo"); // Clear storage
+
+        navigate(returnTo); // Redirect user after login
       } catch (err) {
-        console.error('Authentication error:', err);
-        navigate(`/login?error=${encodeURIComponent(err.message || 'Unknown error')}`);
+        console.error("Auth error:", err);
+        navigate("/login"); // Redirect back to login if error
       }
     };
 
-    // Set up auth state listener
-    authSubscription = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        handleAuthentication(session);
+    // Subscribe to auth state changes (fixes mobile issues)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        handleAuthentication(); // Handle login event
       }
-    }).data.subscription;
-
-    // Initial check for existing session
-    handleAuthentication();
+    });
 
     return () => {
-      if (authSubscription) {
-        authSubscription.unsubscribe();
-      }
+      authListener?.subscription.unsubscribe(); // Cleanup listener
     };
   }, [navigate]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-950">
-      <div className="text-white text-lg animate-pulse">
-        Authenticating...
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-black text-white">
+      <p className="animate-pulse">Authenticating...</p>
     </div>
   );
 };
