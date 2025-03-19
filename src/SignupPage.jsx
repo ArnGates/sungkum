@@ -14,6 +14,7 @@ const SignUpPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
+    setErrorMessage(""); // Clear previous errors immediately
     if (!email || !username || !password) {
       setErrorMessage("All fields are required");
       return false;
@@ -34,39 +35,45 @@ const SignUpPage = () => {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
-    setIsLoading(true);
-
-    if (!validateForm()) {
-      setIsLoading(false);
-      return;
-    }
 
     try {
-      // Case-insensitive username check
-      const { data: usernameData, error: usernameError } = await supabase
-        .from("profiles")
-        .select("username")
-        .ilike("username", username)
-        .maybeSingle();
+      // Mobile detection
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+      // Username check with timeout
+      const usernameCheck = Promise.race([
+        supabase
+          .from("profiles")
+          .select("username")
+          .ilike("username", username)
+          .maybeSingle(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Network timeout - please check your connection")), 10000)
+        )
+      ]);
+
+      const { data: usernameData, error: usernameError } = await usernameCheck;
+      
       if (usernameError) throw usernameError;
-      if (usernameData) {
-        setErrorMessage("Username already taken");
-        return;
-      }
+      if (usernameData) throw new Error("Username already taken");
 
-      // Create user with metadata
+      // Signup with mobile-friendly options
       const { data: user, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { 
             username,
-            email_verified: false 
+            email_verified: false,
+            signup_device: isMobile ? "mobile" : "desktop"
           },
           emailRedirectTo: window.location.origin,
+          captchaToken: isMobile ? await getMobileCaptchaToken() : null,
         },
       });
 
@@ -74,33 +81,45 @@ const SignUpPage = () => {
         if (error.message.includes("already exists")) {
           throw new Error("Email already registered");
         }
-        throw error;
+        throw new Error("Signup failed - please try again");
       }
 
-      if (user?.identities?.length === 0) {
-        throw new Error("User already exists");
-      }
+      setSuccessMessage(isMobile 
+        ? "Check your mobile email client for verification!" 
+        : "Check your email for verification link!");
 
-      setSuccessMessage("Check your email for verification link!");
+      // Reset form
       setEmail("");
       setUsername("");
       setPassword("");
+
     } catch (error) {
       console.error("Signup error:", error);
-      setErrorMessage(
-        error.message.includes("unique") || error.message.includes("exists")
-          ? "Email or username already exists"
-          : "Signup failed. Please try again."
-      );
+      handleMobileSpecificErrors(error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleMobileSpecificErrors = (message) => {
+    const mobileErrors = {
+      "Network timeout": "Poor connection detected - try better network",
+      "Failed to fetch": "Connection failed - check internet",
+      "User cancelled": "Process cancelled - try again"
+    };
+
+    const errorKey = Object.keys(mobileErrors).find(key => message.includes(key));
+    setErrorMessage(errorKey ? mobileErrors[errorKey] : message);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-950 to-black/100 pt-20">
       <div className="flex flex-1 items-center justify-center">
-        <form onSubmit={handleSignUp} className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-lg shadow-md p-6 text-white">
+        <form 
+          onSubmit={handleSignUp}
+          className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-lg shadow-md p-6 text-white"
+          noValidate // Disable native form validation
+        >
           <h2 className="text-2xl font-semibold text-center mb-4">Create an Account</h2>
 
           {errorMessage && <p className="text-red-500 text-center mb-3">{errorMessage}</p>}
@@ -113,6 +132,7 @@ const SignUpPage = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-3 bg-gray-800 text-white rounded-md mb-3"
             autoComplete="email"
+            inputMode="email"
             required
           />
 
@@ -124,6 +144,7 @@ const SignUpPage = () => {
             className="w-full p-3 bg-gray-800 text-white rounded-md mb-3"
             autoComplete="username"
             pattern="^[a-zA-Z0-9_]{3,20}$"
+            inputMode="text"
             required
           />
 
@@ -141,10 +162,16 @@ const SignUpPage = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white p-3 rounded-md disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white p-3 rounded-md disabled:opacity-50 relative"
           >
+            {isLoading && (
+              <div className="absolute inset-0 bg-black/20 rounded-md" />
+            )}
             {isLoading ? (
-              <span className="animate-pulse">Processing...</span>
+              <span className="flex items-center gap-2">
+                <span className="animate-spin">↻</span>
+                Processing...
+              </span>
             ) : (
               <>
                 <UserPlus size={18} /> Sign Up
@@ -163,6 +190,21 @@ const SignUpPage = () => {
       <Footer />
     </div>
   );
+};
+
+// Optional mobile captcha implementation
+const getMobileCaptchaToken = async () => {
+  if (typeof window.grecaptcha !== 'undefined' && window.grecaptcha.enterprise) {
+    try {
+      return await window.grecaptcha.enterprise.execute('YOUR_RECAPTCHA_SITE_KEY', {
+        action: 'mobile_signup'
+      });
+    } catch (error) {
+      console.error("Captcha error:", error);
+      return null;
+    }
+  }
+  return null;
 };
 
 export default SignUpPage;

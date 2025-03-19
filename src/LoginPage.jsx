@@ -14,17 +14,24 @@ const LoginPage = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) console.error("Session error:", error);
       setUser(session?.user || null);
-      if (session?.user) navigate("/");
     };
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) navigate("/");
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setUser(session?.user || null);
+        if (event === "SIGNED_IN" && session?.user) {
+          navigate("/");
+        }
+        if (event === "SIGNED_OUT") {
+          navigate("/login");
+        }
+      }
+    );
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -35,13 +42,8 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -54,15 +56,17 @@ const LoginPage = () => {
     setError("");
     
     try {
-      const { error } = await supabase.auth.signInWithOAuth({ 
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin
+          redirectTo: window.location.origin,
+          queryParams: {
+            prompt: "select_account" // Forces account selection
+          }
         }
       });
 
       if (error) throw error;
-      
     } catch (err) {
       setError("Google login failed. Please try again.");
       console.error(err);
@@ -73,6 +77,7 @@ const LoginPage = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    window.location.reload(); // Clear session completely
     navigate("/login");
   };
 
@@ -82,7 +87,7 @@ const LoginPage = () => {
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-lg shadow-md p-6 text-white">
             <h2 className="text-2xl font-semibold text-center mb-4">
-              Welcome, {user.user_metadata?.username || "User"}
+              Welcome, {user.user_metadata?.name || "User"}
             </h2>
             <div className="text-center mb-4 text-gray-300 text-sm">{user.email}</div>
             <button

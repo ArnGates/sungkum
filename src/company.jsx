@@ -5,7 +5,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 // Image slider component
-const images = ["/logo.png", "/logocom.png"]; // Add your images here
+const images = ["/logo.png", "/logocom.png"];
 
 const ImageSlider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -15,15 +15,15 @@ const ImageSlider = () => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
     }, 4000);
 
-    return () => clearInterval(interval); // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="relative w-full md:w-auto flex justify-center" data-aos="fade-left">
+    <div className="relative w-full flex justify-center overflow-hidden" data-aos="fade-left">
       <img
         src={images[currentIndex]}
         alt="Mission"
-        className="w-4/5 md:w-full rounded-lg shadow-lg mx-auto transition-opacity duration-1000 opacity-100"
+        className="w-full max-w-xs md:max-w-full rounded-lg shadow-lg mx-auto transition-opacity duration-1000 opacity-100"
       />
     </div>
   );
@@ -38,7 +38,7 @@ const Company = () => {
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-black text-white font-[Poppins]">
+    <div className="w-full min-h-screen bg-black text-white font-[Poppins] overflow-hidden">
       {/* Main Content Wrapper */}
       <div className="flex flex-col items-center py-12 px-6">
         {/* Header Section */}
@@ -48,13 +48,12 @@ const Company = () => {
           </h1>
           <p className="text-sm md:text-xl text-gray-300 leading-relaxed">
             At Sungkum, we specialize in modern, high-performance web design and development to help businesses
-            establish a strong online presence. Whether you're a startup, small business, or large enterprise,
-            we create custom websites that are visually stunning, mobile-responsive, and SEO-friendly.
+            establish a strong online presence.
           </p>
         </div>
 
         {/* Mission Section */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center w-full max-w-5xl">
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center w-full max-w-5xl overflow-hidden">
           <div className="text-left order-2 md:order-1" data-aos="fade-right">
             <h2 className="text-lg md:text-3xl font-semibold text-cyan-400 mb-4">
               Why Choose Us?
@@ -69,46 +68,38 @@ const Company = () => {
             </ul>
           </div>
 
-          {/* Image Slider (New) */}
+          {/* Image Slider */}
           <ImageSlider />
         </div>
 
         {/* Services Section */}
-        <div className="mt-12 text-center w-full max-w-5xl" data-aos="fade-up">
+        <div className="mt-12 text-center w-full max-w-5xl overflow-hidden" data-aos="fade-up">
           <h2 className="text-2xl md:text-3xl font-semibold text-cyan-400 mb-6">
             What We Offer
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="p-10 md:p-14 bg-gray-800 rounded-lg shadow-lg" data-aos="zoom-in">
-              <h3 className="text-lg md:text-xl font-bold text-white">Custom Website Design</h3>
-              <p className="text-gray-400 mt-2 text-xs md:text-base">
-                Unique and visually appealing website designs tailored to your brand.
-              </p>
-            </div>
-            <div className="p-10 md:p-14 bg-gray-800 rounded-lg shadow-lg" data-aos="zoom-in">
-              <h3 className="text-lg md:text-xl font-bold text-white">E-Commerce Solutions</h3>
-              <p className="text-gray-400 mt-2 text-xs md:text-base">
-                Powerful online stores with seamless shopping experiences.
-              </p>
-            </div>
-            <div className="p-10 md:p-14 bg-gray-800 rounded-lg shadow-lg" data-aos="zoom-in">
-              <h3 className="text-lg md:text-xl font-bold text-white">SEO & Optimization</h3>
-              <p className="text-gray-400 mt-2 text-xs md:text-base">
-                Boost your website’s ranking and performance with our SEO strategies.
-              </p>
-            </div>
+            {["Custom Website Design", "E-Commerce Solutions", "SEO & Optimization"].map((service, index) => (
+              <div key={index} className="p-10 md:p-14 bg-gray-800 rounded-lg shadow-lg" data-aos="zoom-in">
+                <h3 className="text-lg md:text-xl font-bold text-white">{service}</h3>
+                <p className="text-gray-400 mt-2 text-xs md:text-base">
+                  {index === 0 && "Unique and visually appealing website designs tailored to your brand."}
+                  {index === 1 && "Powerful online stores with seamless shopping experiences."}
+                  {index === 2 && "Boost your website’s ranking and performance with our SEO strategies."}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Video Section */}
-        <div className="mt-12 w-full max-w-4xl" data-aos="fade-up">
+        <div className="mt-12 w-full max-w-4xl overflow-hidden" data-aos="fade-up">
           <h2 className="text-2xl md:text-3xl font-semibold text-cyan-400 mb-6 text-center">
             Watch Our Video
           </h2>
           <div className="relative w-full pt-[56.25%] rounded-lg shadow-lg overflow-hidden border-4 border-white">
             <iframe
               className="absolute top-0 left-0 w-full h-full rounded-lg"
-               src="https://www.youtube.com/embed/r_UsHyE5eqI"
+              src="https://www.youtube.com/embed/r_UsHyE5eqI"
               title="Watch our Video"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -122,7 +113,7 @@ const Company = () => {
           <Link
             to="/"
             className="px-6 py-3 bg-cyan-500 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-cyan-600 transition-all"
-            onClick={() => window.scrollTo(0, 0)} // Ensures scroll resets
+            onClick={() => window.scrollTo(0, 0)}
           >
             Back to Home
           </Link>
