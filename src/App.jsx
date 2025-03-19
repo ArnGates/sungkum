@@ -13,14 +13,14 @@ import BodySection from './index.jsx';
 import MidSection from './mid.jsx';
 import SlideIcon from './slideIcon.jsx';
 import Footer from './footer.jsx';
-import LoginPage from "./LoginPage";
-import SignupPage from "./SignupPage";
-import AuthCallback from "./auth-callback"; // Add this import
+
+import LoginPage from "./LoginPage";  // Import Login Page
+import SignupPage from "./SignupPage";  // Import Signup Page
 
 function App() {
   return (
     <Router>
-      <Navbar />
+      <Navbar />  {/* Navbar should be outside Routes to show on every page */}
       <Routes>
         {/* Home Page */}
         <Route path="/" element={
@@ -39,12 +39,9 @@ function App() {
         <Route path="/vacancy" element={<Vacancy />} />
         <Route path="/promotion" element={<Promotion />} />
 
-        {/* Authentication Pages */}
+        {/* Login & Signup Pages */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        
-        {/* Add Auth Callback Route */}
-        <Route path="/auth-callback" element={<AuthCallback />} />
       </Routes>
     </Router>
   );

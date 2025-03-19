@@ -12,6 +12,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Function to check if the device is mobile
   const isMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ const LoginPage = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Email/Password Login Handler
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -48,17 +50,18 @@ const LoginPage = () => {
     }
   };
 
+  // Google Login Handler (Fixes for Mobile)
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError("");
-    
+
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth-callback`,
           queryParams: {
-            prompt: "select_account",
+            prompt: "select_account", // ✅ Force account selection
             display: isMobile() ? "touch" : "popup"
           }
         }
@@ -66,6 +69,7 @@ const LoginPage = () => {
 
       if (error) throw error;
 
+      // ✅ Mobile fix: Redirects user to the login URL instead of using a popup
       if (isMobile() && data?.url) {
         window.location.href = data.url;
       }
@@ -80,11 +84,13 @@ const LoginPage = () => {
     }
   };
 
+  // Logout Handler
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.reload();
   };
 
+  // If user is logged in, show Welcome Page
   if (user) {
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-950 to-black/100 pt-20">
@@ -115,6 +121,7 @@ const LoginPage = () => {
         <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-lg shadow-md p-6 text-white">
           <h2 className="text-2xl font-semibold text-center mb-4">Welcome Back</h2>
 
+          {/* Email Login Form */}
           <form onSubmit={handleEmailLogin}>
             <input
               type="email"
@@ -149,6 +156,7 @@ const LoginPage = () => {
 
           <div className="text-center my-4 text-gray-400 text-sm">or</div>
 
+          {/* Google Login Button */}
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
