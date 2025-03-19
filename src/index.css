@@ -15,7 +15,6 @@ html {
     border: 1px solid white;
   }
   input, button {
-    min-height: 48px;
     touch-action: manipulation;
   }
   
