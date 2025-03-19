@@ -1,8 +1,9 @@
+// LoginPage.jsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LogIn, LogOut, Loader } from "lucide-react";
-import Footer from "./footer";
 import supabase from "./supabaseClient";
+import Footer from "./footer";
 
 const LoginPage = () => {
   const [user, setUser] = useState(null);
@@ -12,19 +13,32 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const isMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) console.error("Session error:", error);
-      setUser(session?.user || null);
+    const handleMobileOAuthCallback = async () => {
+      if (isMobile() && window.location.hash.includes("#access_token")) {
+        window.location.href = window.location.href.replace("#", "?");
+        window.location.reload();
+      }
     };
 
-    checkAuth();
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+      handleMobileOAuthCallback();
+    };
+
+    initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user || null);
         if (event === "SIGNED_IN" && session?.user) {
+          if (isMobile()) {
+            window.location.href = window.location.origin;
+            return;
+          }
           navigate("/");
         }
         if (event === "SIGNED_OUT") {
@@ -35,6 +49,40 @@ const LoginPage = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+          queryParams: {
+            prompt: "select_account",
+            display: isMobile() ? "touch" : "popup",
+            auth_method: isMobile() ? "redirect" : "popup"
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (isMobile() && window.webkit) {
+        window.location.reload();
+      }
+
+    } catch (err) {
+      setError(isMobile() ? 
+        "Please complete login in your browser window" : 
+        "Google login failed. Please try again."
+      );
+      console.error("Authentication Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -51,34 +99,13 @@ const LoginPage = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setError("");
-    
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin,
-          queryParams: {
-            prompt: "select_account" // Forces account selection
-          }
-        }
-      });
-
-      if (error) throw error;
-    } catch (err) {
-      setError("Google login failed. Please try again.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.reload(); // Clear session completely
-    navigate("/login");
+    if (isMobile()) {
+      window.location.href = window.location.origin;
+    } else {
+      navigate("/login");
+    }
   };
 
   if (user) {
@@ -148,6 +175,12 @@ const LoginPage = () => {
             disabled={loading}
             className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white p-3 rounded-md disabled:opacity-50"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5">
+              <path 
+                d="M12.545 10.239v3.821h5.445c-.712 2.315-2.647 3.972-5.445 3.972-3.332 0-6.033-2.701-6.033-6.032s2.701-6.032 6.033-6.032c1.498 0 2.866.549 3.921 1.453l2.814-2.814C17.503 2.332 15.139 1 12.545 1 7.021 1 2.545 5.476 2.545 11s4.476 10 10 10c5.523 0 10-4.476 10-10 0-.671-.069-1.325-.189-1.971H12.545z" 
+                fill="currentColor"
+              />
+            </svg>
             Sign in with Google
           </button>
 
