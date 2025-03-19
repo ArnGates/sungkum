@@ -1,4 +1,3 @@
-// LoginPage.jsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LogIn, LogOut, Loader } from "lucide-react";
@@ -16,75 +15,25 @@ const LoginPage = () => {
   const isMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   useEffect(() => {
-    const handleMobileOAuthCallback = async () => {
-      if (isMobile() && window.location.hash.includes("#access_token")) {
-        window.location.href = window.location.href.replace("#", "?");
-        window.location.reload();
-      }
-    };
-
-    const initializeAuth = async () => {
+    const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user || null);
-      handleMobileOAuthCallback();
+      if (session?.user) navigate("/");
     };
 
-    initializeAuth();
+    checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user || null);
-        if (event === "SIGNED_IN" && session?.user) {
-          if (isMobile()) {
-            window.location.href = window.location.origin;
-            return;
-          }
-          navigate("/");
-        }
-        if (event === "SIGNED_OUT") {
-          navigate("/login");
-        }
+        if (event === "SIGNED_IN") navigate("/");
       }
     );
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setError("");
-    
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin,
-          queryParams: {
-            prompt: "select_account",
-            display: isMobile() ? "touch" : "popup",
-            auth_method: isMobile() ? "redirect" : "popup"
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      if (isMobile() && window.webkit) {
-        window.location.reload();
-      }
-
-    } catch (err) {
-      setError(isMobile() ? 
-        "Please complete login in your browser window" : 
-        "Google login failed. Please try again."
-      );
-      console.error("Authentication Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogin = async (e) => {
+  const handleEmailLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -99,13 +48,41 @@ const LoginPage = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth-callback`,
+          queryParams: {
+            prompt: "select_account",
+            display: isMobile() ? "touch" : "popup"
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (isMobile() && data?.url) {
+        window.location.href = data.url;
+      }
+
+    } catch (err) {
+      setError(isMobile() ? 
+        "Please complete login in your browser" : 
+        "Google login failed");
+      console.error("Auth Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    if (isMobile()) {
-      window.location.href = window.location.origin;
-    } else {
-      navigate("/login");
-    }
+    window.location.reload();
   };
 
   if (user) {
@@ -116,7 +93,9 @@ const LoginPage = () => {
             <h2 className="text-2xl font-semibold text-center mb-4">
               Welcome, {user.user_metadata?.name || "User"}
             </h2>
-            <div className="text-center mb-4 text-gray-300 text-sm">{user.email}</div>
+            <div className="text-center mb-4 text-gray-300 text-sm">
+              {user.email}
+            </div>
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white p-3 rounded-md"
@@ -136,7 +115,7 @@ const LoginPage = () => {
         <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-lg shadow-md p-6 text-white">
           <h2 className="text-2xl font-semibold text-center mb-4">Welcome Back</h2>
 
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleEmailLogin}>
             <input
               type="email"
               placeholder="Email"
@@ -164,7 +143,7 @@ const LoginPage = () => {
               className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-md mt-3 disabled:opacity-50"
             >
               {loading ? <Loader className="animate-spin" size={18} /> : <LogIn size={18} />}
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "Logging in..." : "Login with Email"}
             </button>
           </form>
 
