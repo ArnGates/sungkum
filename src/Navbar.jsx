@@ -8,36 +8,60 @@ import supabase from "./supabaseClient";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      setLoading(true);
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        setUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     checkUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setUser(session?.user || null);
+        // Handle mobile OAuth redirect
+        if (event === "SIGNED_IN" && window.location.hash) {
+          window.location.hash = "";
+        }
+      }
+    );
 
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
+    return () => subscription?.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    window.location.reload(); // Force full state reset
   };
+
+  if (loading) {
+    return (
+      <nav className="bg-gradient-to-r from-gray-950 to-black text-white p-5 flex justify-between items-center w-full px-7 relative z-50 shadow-lg border-b border-gray-700">
+        {/* Loading skeleton */}
+        <div className="animate-pulse flex items-center gap-3">
+          <div className="h-8 w-8 bg-gray-700 rounded-full"></div>
+          <div className="h-4 w-24 bg-gray-700 rounded"></div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="bg-gradient-to-r from-gray-950 to-black text-white p-5 flex justify-between items-center w-full px-7 relative z-50 shadow-lg border-b border-gray-700">
       {/* Left Side: Logo and Company Name */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Smaller Logo for Mobile */}
         <img src="/logo.png" alt="Company Logo" className="h-8 sm:h-12 w-auto" />
-        {/* Smaller Font Size for "Sungkum" on Mobile */}
         <span className="text-xl sm:text-3xl font-extrabold font-[Poppins] bg-gradient-to-r from-orange-400 to-yellow-300 bg-clip-text text-transparent">
           Sungkum
         </span>
@@ -48,7 +72,7 @@ const Navbar = () => {
         {user ? (
           <div className="flex items-center gap-3">
             <UserCircle size={28} />
-            <span className="text-lg">{user.email}</span>
+            <span className="text-lg">{user.email || user.user_metadata?.email}</span>
             <button
               onClick={handleLogout}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition duration-300"
@@ -66,55 +90,48 @@ const Navbar = () => {
         )}
       </div>
 
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu */}
       <div className="md:hidden">
         <button onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Dropdown */}
       <div
         className={`absolute top-16 right-0 w-64 bg-gray-900 rounded-lg shadow-lg p-3 transform transition-all duration-300 
         ${isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
       >
-        <ul className="flex flex-col gap-2">
-          {user ? (
-            <>
-              <li className="flex items-center gap-2 text-white">
-                <UserCircle size={20} />
-                {/* Smaller Email Font for Mobile */}
-                <span className="text-xs sm:text-sm">{user.email}</span>
-              </li>
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg w-full flex items-center gap-2 transition duration-300"
-                >
-                  <LogOut size={16} />
-                  Logout
-                </button>
-              </li>
-            </>
-          ) : (
-            <>
-              <li>
-                <Link to="/login" onClick={() => setIsOpen(false)}>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg w-full transition duration-300">
-                    Job Seeker Login
-                  </button>
-                </Link>
-              </li>
-              <li>
-                <Link to="/signup" onClick={() => setIsOpen(false)}>
-                  <button className="bg-gray-700 hover:bg-gray-600 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg w-full transition duration-300">
-                    Sign Up
-                  </button>
-                </Link>
-              </li>
-            </>
-          )}
-        </ul>
+        {user ? (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-white">
+              <UserCircle size={20} />
+              <span className="text-xs sm:text-sm">
+                {user.email || user.user_metadata?.email}
+              </span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg w-full flex items-center gap-2 transition duration-300"
+            >
+              <LogOut size={16} />
+              Logout
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <Link to="/login" onClick={() => setIsOpen(false)}>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg w-full transition duration-300">
+                Job Seeker Login
+              </button>
+            </Link>
+            <Link to="/signup" onClick={() => setIsOpen(false)}>
+              <button className="bg-gray-700 hover:bg-gray-600 text-white text-xs sm:text-sm px-3 py-1.5 rounded-lg w-full transition duration-300">
+                Sign Up
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
     </nav>
   );
