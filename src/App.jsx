@@ -1,7 +1,7 @@
 import './App.css';
 import "./index.css";
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 
 import Navbar from "./Navbar.jsx";
 import ButtonSection from './Button.jsx';
@@ -13,14 +13,40 @@ import BodySection from './index.jsx';
 import MidSection from './mid.jsx';
 import SlideIcon from './slideIcon.jsx';
 import Footer from './footer.jsx';
+import LoginPage from "./LoginPage";  
+import SignupPage from "./SignupPage";  
+import supabase from "./supabaseClient"; 
 
-import LoginPage from "./LoginPage";  // Import Login Page
-import SignupPage from "./SignupPage";  // Import Signup Page
+// 🔹 Handle Supabase OAuth Redirect After Login
+const AuthCallback = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleAuthRedirect = async () => {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Auth Redirect Error:", error);
+      } else {
+        // ✅ Redirect to Home after login
+        navigate("/");
+      }
+    };
+
+    handleAuthRedirect();
+  }, [navigate]);
+
+  return (
+    <div className="flex justify-center items-center h-screen bg-black text-white">
+      <p>Logging you in...</p>
+    </div>
+  );
+};
 
 function App() {
   return (
     <Router>
-      <Navbar />  {/* Navbar should be outside Routes to show on every page */}
+      <Navbar />  
       <Routes>
         {/* Home Page */}
         <Route path="/" element={
@@ -42,6 +68,9 @@ function App() {
         {/* Login & Signup Pages */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+
+        {/* 🔥 Fix: Add OAuth Redirect Route */}
+        <Route path="/auth-callback" element={<AuthCallback />} />
       </Routes>
     </Router>
   );
