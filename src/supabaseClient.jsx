@@ -3,33 +3,32 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Singleton pattern with mobile detection
-let supabaseInstance = null;
+// Ensure environment variables are set
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Supabase environment variables are missing.");
+}
 
-const getSupabase = () => {
-  if (!supabaseInstance) {
-    const isMobile = window.matchMedia('(pointer: coarse)').matches;
-    
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        storage: isMobile ? sessionStorage : localStorage,
-        storageKey: 'sb_session'
-      }
-    });
-  }
-  return supabaseInstance;
+// Improved mobile detection
+const isMobile = () => {
+  if (typeof window === "undefined") return false; // Avoid errors in SSR
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 };
 
-// Export singleton instance
-const supabase = getSupabase();
+// Initialize Supabase Client
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    storage: isMobile() ? sessionStorage : localStorage,
+    storageKey: "sb_session"
+  }
+});
 
-// Development utilities
+// Debugging in Development Mode
 if (import.meta.env.DEV) {
   window.supabase = supabase;
-  console.debug('Supabase singleton initialized');
+  console.debug("✅ Supabase initialized (Debug Mode)");
 }
 
 export default supabase;

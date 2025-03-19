@@ -12,29 +12,29 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Function to check if the device is mobile
+  // Detect if the user is on a mobile device
   const isMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user || null);
-      if (session?.user) navigate("/");
     };
 
-    checkAuth();
+    checkAuth(); // Check session when component mounts
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user || null);
-        if (event === "SIGNED_IN") navigate("/");
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+      if (event === "SIGNED_IN") {
+        navigate("/"); // Redirect to home after sign-in
       }
-    );
+    });
 
-    return () => subscription.unsubscribe();
+    return () => authListener?.subscription.unsubscribe(); // Cleanup
   }, [navigate]);
 
-  // Email/Password Login Handler
+  // Handle Email & Password Login
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -50,18 +50,18 @@ const LoginPage = () => {
     }
   };
 
-  // Google Login Handler (Fixes for Mobile)
+  // Handle Google Login
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError("");
-
+    
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth-callback`,
           queryParams: {
-            prompt: "select_account", // ✅ Force account selection
+            prompt: "select_account",
             display: isMobile() ? "touch" : "popup"
           }
         }
@@ -69,7 +69,6 @@ const LoginPage = () => {
 
       if (error) throw error;
 
-      // ✅ Mobile fix: Redirects user to the login URL instead of using a popup
       if (isMobile() && data?.url) {
         window.location.href = data.url;
       }
@@ -84,13 +83,13 @@ const LoginPage = () => {
     }
   };
 
-  // Logout Handler
+  // Handle Logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.reload();
   };
 
-  // If user is logged in, show Welcome Page
+  // ✅ If User is Logged In
   if (user) {
     return (
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-950 to-black/100 pt-20">
@@ -115,13 +114,13 @@ const LoginPage = () => {
     );
   }
 
+  // ✅ If User is NOT Logged In
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-950 to-black/100 pt-20">
       <div className="flex flex-1 items-center justify-center">
         <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-lg shadow-md p-6 text-white">
           <h2 className="text-2xl font-semibold text-center mb-4">Welcome Back</h2>
 
-          {/* Email Login Form */}
           <form onSubmit={handleEmailLogin}>
             <input
               type="email"
@@ -156,7 +155,6 @@ const LoginPage = () => {
 
           <div className="text-center my-4 text-gray-400 text-sm">or</div>
 
-          {/* Google Login Button */}
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
