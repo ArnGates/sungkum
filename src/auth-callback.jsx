@@ -6,22 +6,22 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleAuthRedirect = async () => {
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
-      if (error) {
-        console.error("OAuth callback error:", error.message);
+    const handleAuth = async () => {
+      try {
+        const { error } = await supabase.auth.getSession();
+
+        if (error) throw error;
+        navigate("/"); // Redirect to home after login
+      } catch (error) {
+        console.error("Auth callback failed:", error);
+        navigate("/login");
       }
-      navigate("/"); // Redirect to homepage after successful login
     };
 
-    handleAuthRedirect();
+    handleAuth();
   }, [navigate]);
 
-  return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
-      <p>Authenticating...</p>
-    </div>
-  );
+  return <div>Authenticating...</div>;
 };
 
 export default AuthCallback;
