@@ -10,7 +10,7 @@ const ButtonSection = () => {
   };
 
   return (
-    <div className="w-full bg-gray-950 py-10 px-4 flex justify-center items-center gap-4 z-0 pb-8 pt-8">
+    <div className="w-full bg-gray-950 py-10 px-4 flex justify-center items-center gap-4 z-0 pb-5 pt-5">
       {[
         { text: 'About', path: '/company' },
         { text: 'Pricing', path: '/services' },

@@ -1,6 +1,4 @@
-import "./App.css";
-import "./index.css";
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X, UserCircle, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import supabase from "./supabaseClient";
@@ -11,52 +9,54 @@ const Navbar = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkUser = async () => {
+    const fetchUser = async () => {
       setLoading(true);
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Error fetching session:", error);
+      } else {
         setUser(session?.user || null);
-      } catch (error) {
-        console.error("Error fetching user:", error.message);
-      } finally {
-        setLoading(false);
       }
+
+      setLoading(false);
     };
 
-    checkUser();
+    fetchUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user || null);
-      }
-    );
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth State Changed:", session);
+      setUser(session?.user || null);
+    });
 
-    return () => authListener?.subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    window.location.reload();
+    window.location.reload(); // Force refresh to clear session
   };
 
   return (
-    <nav className="bg-gradient-to-r from-gray-950 to-black text-white p-5 flex justify-between items-center w-full px-7 relative z-50 shadow-lg border-b border-gray-700">
-      {/* Left Side: Logo */}
+    <nav className="bg-gradient-to-r from-gray-900 to-gray-950 text-white p-2 flex justify-between items-center w-full px-7 relative z-50 shadow-lg border-b border-gray-700">
+      {/* Logo & Name */}
       <div className="flex items-center gap-2 sm:gap-3">
-        <img src="/logo.png" alt="Company Logo" className="h-8 sm:h-12 w-auto" />
+        <img src="/logo.png" alt="Company Logo" className="h-8 sm:h-18 w-auto" />
         <span className="text-xl sm:text-3xl font-extrabold font-[Poppins] bg-gradient-to-r from-orange-400 to-yellow-300 bg-clip-text text-transparent">
           Sungkum
         </span>
       </div>
 
-      {/* Right Side: Desktop Navigation */}
+      {/* Desktop Navigation */}
       <div className="hidden md:flex gap-4 items-center">
-        {user ? (
+        {loading ? (
+          <p>Loading...</p>
+        ) : user ? (
           <div className="flex items-center gap-3">
             <UserCircle size={28} />
-            <span className="text-lg">{user.email || user.user_metadata?.email}</span>
+            <span className="text-lg">{user.email}</span>
             <button
               onClick={handleLogout}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition duration-300"
@@ -74,7 +74,7 @@ const Navbar = () => {
         )}
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Toggle */}
       <div className="md:hidden">
         <button onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -86,7 +86,9 @@ const Navbar = () => {
         className={`absolute top-16 right-0 w-64 bg-gray-900 rounded-lg shadow-lg p-3 transform transition-all duration-300 
         ${isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
       >
-        {user ? (
+        {loading ? (
+          <p className="text-white">Loading...</p>
+        ) : user ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 text-white">
               <UserCircle size={20} />

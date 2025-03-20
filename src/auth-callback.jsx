@@ -6,41 +6,30 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleAuthentication = async () => {
+    const handleAuthRedirect = async () => {
       try {
-        // Wait for Supabase session to update
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: session, error } = await supabase.auth.getSession();
 
-        if (error || !session) {
-          throw new Error(error?.message || "No session found");
+        console.log("Supabase Session:", session); // Debugging
+
+        if (error || !session?.session) {
+          console.error("Authentication error:", error);
+          navigate(`/login?error=${encodeURIComponent(error?.message || "No session found")}`);
+        } else {
+          navigate('/'); // Redirect to home after login
         }
-
-        // ✅ Retrieve the return path (if stored)
-        const returnTo = localStorage.getItem("returnTo") || "/";
-        localStorage.removeItem("returnTo"); // Clear storage
-
-        navigate(returnTo); // Redirect user after login
       } catch (err) {
-        console.error("Auth error:", err);
-        navigate("/login"); // Redirect back to login if error
+        console.error("Unexpected error:", err);
+        navigate(`/login?error=${encodeURIComponent(err.message)}`);
       }
     };
 
-    // Subscribe to auth state changes (fixes mobile issues)
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN") {
-        handleAuthentication(); // Handle login event
-      }
-    });
-
-    return () => {
-      authListener?.subscription.unsubscribe(); // Cleanup listener
-    };
+    handleAuthRedirect();
   }, [navigate]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black text-white">
-      <p className="animate-pulse">Authenticating...</p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-950">
+      <p className="text-white text-lg animate-pulse">Authenticating...</p>
     </div>
   );
 };
