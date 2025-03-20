@@ -2,3 +2,26 @@ body {
   overflow-x: hidden;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700&family=Rajdhani:wght@400;700&family=Audiowide&display=swap');
+
+body {
+  font-family: 'Rajdhani', sans-serif; /* Default gaming font */
+  background-color: black;
+  color: white;
+}
+
+h1, h2, h3 {
+  font-family: 'Orbitron', sans-serif; /* Futuristic headings */
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+p, ul, li {
+  font-family: 'Rajdhani', sans-serif; /* Clean gaming font */
+  font-weight: 400;
+}
+
+button, a {
+  font-family: 'Press Start 2P', cursive; /* Arcade-style buttons */
+  text-transform: uppercase;
+}

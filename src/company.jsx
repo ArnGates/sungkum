@@ -4,7 +4,7 @@ import Footer from "./footer";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-// Image slider component
+// ✅ Image slider component
 const images = ["/logo.png", "/logocom.png"];
 
 const ImageSlider = () => {
@@ -33,68 +33,67 @@ const Company = () => {
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
 
-    // Ensure the page starts from the top when loaded
+    // ✅ Ensure the page starts from the top when loaded
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-black text-white font-[Poppins] overflow-hidden">
-      {/* Main Content Wrapper */}
+    <div className="w-full min-h-screen bg-black text-white font-[Rajdhani] overflow-hidden">
+      {/* ✅ Main Content Wrapper */}
       <div className="flex flex-col items-center py-12 px-6">
-        {/* Header Section */}
+        {/* ✅ Header Section */}
         <div className="text-center max-w-3xl" data-aos="fade-up">
           <h1 className="text-lg md:text-4xl font-bold text-cyan-400 mb-6">
-            Welcome to Sungkum Website - Professional Web Design & Development
+            Welcome to Sungkum - Web Design & Development
           </h1>
           <p className="text-sm md:text-xl text-gray-300 leading-relaxed">
-            At Sungkum, we specialize in modern, high-performance web design and development to help businesses
-            establish a strong online presence.
+            Level up your online presence with cutting-edge websites and futuristic designs.
           </p>
         </div>
 
-        {/* Mission Section */}
+        {/* ✅ Mission Section */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center w-full max-w-5xl overflow-hidden">
           <div className="text-left order-2 md:order-1" data-aos="fade-right">
             <h2 className="text-lg md:text-3xl font-semibold text-cyan-400 mb-4">
               Why Choose Us?
             </h2>
             <ul className="text-gray-300 text-xs md:text-lg leading-relaxed space-y-2">
-              <li>✔ Creative & Unique Designs – We craft websites that reflect your brand identity.</li>
-              <li>✔ User-Friendly & Mobile-Responsive – Your site will look perfect on all devices.</li>
-              <li>✔ SEO-Optimized – Get higher rankings and attract more customers.</li>
-              <li>✔ Affordable & Fast Delivery – High-quality websites at the best prices.</li>
-              <li>✔ E-Commerce & CMS Solutions – Sell online and manage content with ease.</li>
-              <li>✔ Secure & Scalable – Websites built with the latest technologies for security and growth.</li>
+              <li>✔ <strong>Futuristic Designs</strong> – Inspired by cyberpunk and sci-fi.</li>
+              <li>✔ <strong>Mobile-Optimized</strong> – Game-like UI, fully responsive.</li>
+              <li>✔ <strong>SEO-Boosted</strong> – Speed, performance, and rankings.</li>
+              <li>✔ <strong>Affordable & Fast</strong> – High-performance websites at top speed.</li>
+              <li>✔ <strong>Custom UI & Animations</strong> – Eye-catching motion effects.</li>
+              <li>✔ <strong>Secure & Fast</strong> – High-speed, lag-free performance.</li>
             </ul>
           </div>
 
-          {/* Image Slider */}
+          {/* ✅ Image Slider */}
           <ImageSlider />
         </div>
 
-        {/* Services Section */}
+        {/* ✅ Services Section */}
         <div className="mt-12 text-center w-full max-w-5xl overflow-hidden" data-aos="fade-up">
           <h2 className="text-2xl md:text-3xl font-semibold text-cyan-400 mb-6">
-            What We Offer
+            Services We Offer
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {["Custom Website Design", "E-Commerce Solutions", "SEO & Optimization"].map((service, index) => (
+            {["Cyberpunk Web Design", "E-Commerce Power-Up", "SEO Optimization"].map((service, index) => (
               <div key={index} className="p-10 md:p-14 bg-gray-800 rounded-lg shadow-lg" data-aos="zoom-in">
                 <h3 className="text-lg md:text-xl font-bold text-white">{service}</h3>
                 <p className="text-gray-400 mt-2 text-xs md:text-base">
-                  {index === 0 && "Unique and visually appealing website designs tailored to your brand."}
-                  {index === 1 && "Powerful online stores with seamless shopping experiences."}
-                  {index === 2 && "Boost your website’s ranking and performance with our SEO strategies."}
+                  {index === 0 && "Game-inspired website designs with futuristic vibes."}
+                  {index === 1 && "Powerful online stores with next-gen UX."}
+                  {index === 2 && "Hyper-optimized pages for Google domination."}
                 </p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Video Section */}
+        {/* ✅ Video Section */}
         <div className="mt-12 w-full max-w-4xl overflow-hidden" data-aos="fade-up">
           <h2 className="text-2xl md:text-3xl font-semibold text-cyan-400 mb-6 text-center">
-            Watch Our Video
+            Watch Our Demo
           </h2>
           <div className="relative w-full pt-[56.25%] rounded-lg shadow-lg overflow-hidden border-4 border-white">
             <iframe
@@ -108,7 +107,7 @@ const Company = () => {
           </div>
         </div>
 
-        {/* Back to Home Button */}
+        {/* ✅ Back to Home Button */}
         <div className="mt-12" data-aos="fade-up">
           <Link
             to="/"
@@ -120,7 +119,7 @@ const Company = () => {
         </div>
       </div>
 
-      {/* Footer */}
+      {/* ✅ Footer */}
       <Footer />
     </div>
   );

@@ -15,7 +15,7 @@ import SlideIcon from './slideIcon.jsx';
 import Footer from './footer.jsx';
 import LoginPage from "./LoginPage";  
 import SignupPage from "./SignupPage";  
-import AuthCallback from "./auth-callback";  // ✅ Import fixed callback handler
+import AuthCallback from "./auth-callback.jsx";  // ✅ Import fixed callback handler
 
 function App() {
   return (
