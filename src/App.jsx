@@ -15,14 +15,14 @@ import SlideIcon from './slideIcon.jsx';
 import Footer from './footer.jsx';
 import LoginPage from "./LoginPage";  
 import SignupPage from "./SignupPage";  
-import AuthCallback from "./auth-callback.jsx";  // ✅ Import fixed callback handler
+import AuthCallback from "./routes/AuthCallback";  // ✅ Import fixed callback handler
 
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
-        {/* ✅ Fixed Home Route (Instead of "Home") */}
+        {/* ✅ Fixed Home Route */}
         <Route path="/" element={
           <div className="w-full min-h-screen bg-black m-0 p-0 overflow-hidden">
             <ButtonSection />
@@ -43,8 +43,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
-        {/* 🔥 Fix: Add OAuth Redirect Route */}
-        <Route path="/auth-callback" element={<AuthCallback />} />
+        {/* ✅ Fix: Add OAuth Redirect Route */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
     </Router>
   );

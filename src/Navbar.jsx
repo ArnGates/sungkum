@@ -18,8 +18,8 @@ const Navbar = () => {
 
     fetchUser();
 
-    // ✅ Listen for real-time auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // ✅ Listen for real-time auth changes (Ensures session is updated)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       console.log("🔄 Auth State Changed:", session);
       setUser(session?.user || null);
     });
@@ -31,6 +31,7 @@ const Navbar = () => {
     await supabase.auth.signOut();
     setUser(null);
     setIsOpen(false); // ✅ Ensure mobile menu closes
+    window.location.reload(); // ✅ Force session cleanup
   };
 
   return (
