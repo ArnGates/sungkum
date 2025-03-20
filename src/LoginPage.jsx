@@ -42,13 +42,26 @@ const LoginPage = () => {
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth-callback` }
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth-callback`,
+          flow: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? "implicit" : "pkce", 
+        },
+      });
 
-    if (error) setError("Google login failed.");
-    setLoading(false);
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      setError("Google login failed. Try again.");
+      console.error("Auth Error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = async () => {
