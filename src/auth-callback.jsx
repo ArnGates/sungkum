@@ -7,30 +7,19 @@ const AuthCallback = () => {
 
   useEffect(() => {
     const handleAuthRedirect = async () => {
-      // Get the current session
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error || !session) {
-        console.error("Auth Callback Error:", error);
-        navigate("/login?error=Authentication failed");
-        return;
+      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      if (error) {
+        console.error("OAuth callback error:", error.message);
       }
-
-      // Store session in localStorage (for mobile & desktop support)
-      localStorage.setItem("supabase.auth.token", JSON.stringify(session));
-
-      // ✅ Redirect to home page
-      navigate("/");
+      navigate("/"); // Redirect to homepage after successful login
     };
 
     handleAuthRedirect();
   }, [navigate]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-950">
-      <div className="text-white text-lg animate-pulse">
-        Authenticating...
-      </div>
+    <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
+      <p>Authenticating...</p>
     </div>
   );
 };

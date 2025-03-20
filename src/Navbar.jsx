@@ -11,22 +11,16 @@ const Navbar = () => {
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error) {
-        console.error("Error fetching session:", error);
-      } else {
-        setUser(session?.user || null);
-      }
-
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
       setLoading(false);
     };
 
     fetchUser();
 
-    // Listen for auth state changes
+    // ✅ Listen for real-time auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth State Changed:", session);
+      console.log("🔄 Auth State Changed:", session);
       setUser(session?.user || null);
     });
 
@@ -36,7 +30,7 @@ const Navbar = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    window.location.reload(); // Force refresh to clear session
+    setIsOpen(false); // ✅ Ensure mobile menu closes
   };
 
   return (
