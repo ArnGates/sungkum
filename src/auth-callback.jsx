@@ -6,30 +6,51 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Handle potential URL hash fragments (common in OAuth flows)
-    const handleHashFragment = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error || !data?.session) {
-        console.error("Authentication error:", error?.message || "No session");
+    const handleAuth = async () => {
+      console.log("🔄 Handling OAuth Callback...");
+
+      // Listen for authentication changes
+      const { data: sessionData, error } = await supabase.auth.getSession();
+
+      if (error || !sessionData?.session) {
+        console.error("❌ Authentication failed:", error?.message || "No session found");
+
+        // Retry authentication (optional)
+        supabase.auth.refreshSession();
+
+        // Redirect to login with an error
         navigate("/login?error=auth_failed");
         return;
       }
 
-      navigate("/dashboard");
+      console.log("✅ Authenticated User:", sessionData.session.user);
+
+      // Store session info in localStorage (optional)
+      localStorage.setItem("supabaseSession", JSON.stringify(sessionData.session));
+
+      // Redirect user to dashboard or home
+      navigate("/");
     };
 
-    // Vercel-specific: Add slight delay for edge network stabilization
-    const authTimer = setTimeout(() => {
-      handleHashFragment().catch(console.error);
-    }, 300);
+    handleAuth();
 
-    return () => clearTimeout(authTimer);
+    // Listen for real-time auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        console.log("✅ User signed in:", session.user);
+        navigate("/");
+      }
+    });
+
+    // Cleanup the listener
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-      <p>🔐 Authenticating...</p>
+      <p>🔄 Processing login...</p>
     </div>
   );
 };
