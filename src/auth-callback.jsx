@@ -6,25 +6,30 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleAuth = async () => {
-      console.log("🔄 Handling OAuth Callback...");
+    // Handle potential URL hash fragments (common in OAuth flows)
+    const handleHashFragment = async () => {
       const { data, error } = await supabase.auth.getSession();
-
-      if (error) {
-        console.error("❌ Error fetching session:", error.message);
-      } else {
-        console.log("✅ Authenticated User:", data);
+      
+      if (error || !data?.session) {
+        console.error("Authentication error:", error?.message || "No session");
+        navigate("/login?error=auth_failed");
+        return;
       }
 
-      navigate("/"); // Redirect to homepage after login
+      navigate("/dashboard");
     };
 
-    handleAuth();
-  }, []);
+    // Vercel-specific: Add slight delay for edge network stabilization
+    const authTimer = setTimeout(() => {
+      handleHashFragment().catch(console.error);
+    }, 300);
+
+    return () => clearTimeout(authTimer);
+  }, [navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-      <p>🔄 Processing login...</p>
+      <p>🔐 Authenticating...</p>
     </div>
   );
 };
