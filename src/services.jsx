@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import Footer from "./footer";
 import supabase from "./supabaseClient";
+import ButtonSection from "./Button"
 
 const Services = () => {
   const [showForm, setShowForm] = useState(false);
@@ -62,6 +63,7 @@ const Services = () => {
 
   return (
     <>
+    <ButtonSection/>
       <div className="w-full min-h-screen bg-black text-white font-[Poppins] py-12 px-6">
         <div className="max-w-5xl mx-auto text-center">
           {/* Services Header */}

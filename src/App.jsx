@@ -15,7 +15,7 @@ import SlideIcon from './slideIcon.jsx';
 import Footer from './footer.jsx';
 import LoginPage from "./LoginPage";  
 import SignupPage from "./SignupPage";  
-import AuthCallback from "./auth-callback.jsx";  // ✅ Import fixed callback handler
+import AuthCallback from "./AuthCallback";  // ✅ Import fixed callback handler
 
 function App() {
   return (
@@ -44,7 +44,7 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
 
         {/* 🔥 Fix: Add OAuth Redirect Route */}
-        <Route path="/auth-callback" element={<AuthCallback />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
       </Routes>
     </Router>
   );

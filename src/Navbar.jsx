@@ -36,12 +36,13 @@ const Navbar = () => {
   return (
     <nav className="bg-gradient-to-r from-gray-900 to-gray-950 text-white p-2 flex justify-between items-center w-full px-7 relative z-50 shadow-lg border-b border-gray-700">
       {/* Logo & Name */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        <img src="/logo.png" alt="Company Logo" className="h-8 sm:h-18 w-auto" />
-        <span className="text-xl sm:text-3xl font-extrabold font-[Poppins] bg-gradient-to-r from-orange-400 to-yellow-300 bg-clip-text text-transparent">
-          Sungkum
-        </span>
-      </div>
+<Link to="/" className="flex items-center gap-2 sm:gap-3">
+  <img src="/logo.png" alt="Company Logo" className="h-8 sm:h-18 w-auto cursor-pointer" />
+  <span className="text-xl sm:text-3xl font-extrabold font-[Poppins] bg-gradient-to-r from-orange-400 to-yellow-300 bg-clip-text text-transparent cursor-pointer">
+    Sungkum
+  </span>
+</Link>
+
 
       {/* Desktop Navigation */}
       <div className="hidden md:flex gap-4 items-center">

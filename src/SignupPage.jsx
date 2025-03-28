@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { UserPlus } from "lucide-react";
 import supabase from "./supabaseClient";
 import Footer from "./footer";
+import ButtonSection from "./Button"
 
 const SignUpPage = () => {
   const [email, setEmail] = useState("");
@@ -113,8 +114,10 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-950 to-black/100 pt-20">
-      <div className="flex flex-1 items-center justify-center">
+    
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-950 to-black/100">
+      <ButtonSection/>
+      <div className="flex flex-1 items-center justify-center mt-20">
         <form 
           onSubmit={handleSignUp}
           className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-lg shadow-md p-6 text-white"

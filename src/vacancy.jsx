@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Footer from "./footer";
 import Comments from "./Comments";
+import ButtonSection from "./Button";
 
 const jobs = [
   {
@@ -124,6 +125,7 @@ const Vacancy = () => {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-gray-900 to-black/100 text-white font-[Poppins]">
+      <ButtonSection/>
       <div className="p-8 flex flex-col md:flex-row">
         {/* Filter Section (Sticky Until Content Ends) */}
         <div className={`w-full md:w-1/4 bg-gray-800 p-6 rounded-lg mb-6 md:mb-0 md:mr-8 shadow-lg ${isSticky ? 'md:sticky md:top-20' : ''}`}>
@@ -162,7 +164,7 @@ const Vacancy = () => {
             <option value=">20000">₹20,000 Above</option>
           </select>
           <div className="mt-6 text-center text-sm text-gray-300">
-    We helped you generate a resume for free.{" "}
+    We help you generate a resume for free.{" "}
     <a href="http://resume-generator-sungkum.vercel.app" className="text-cyan-400 underline">Click here</a>
   </div>
         </div>

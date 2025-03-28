@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import supabase from "./supabaseClient"; 
 import { User, Mail, Calendar, X } from "lucide-react"; // Icons
 
+
 const ImageUploader = () => {
   const [image, setImage] = useState(null);
   const [uploadedImages, setUploadedImages] = useState([]);
@@ -107,8 +108,10 @@ const ImageUploader = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
+    
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg">
+        
         <h1 className="text-3xl font-bold text-cyan-400 mb-6 text-center">Upload Your Business Image</h1>
 
         {user ? (

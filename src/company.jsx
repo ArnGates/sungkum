@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Footer from "./footer";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import ButtonSection from "./Button"
 
 const images = ["/logo.png", "/logocom.png"];
 
@@ -36,6 +37,7 @@ const Company = () => {
 
   return (
     <div className="w-full min-h-screen bg-black text-white font-futuristic overflow-hidden">
+      <ButtonSection/>
       {/* Main Content */}
       <div className="flex flex-col items-center py-12 px-6">
         {/* Header Section */}
